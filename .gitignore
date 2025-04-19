@@ -1,5 +1,17 @@
 venv
 pycache
+unknown_entry
+debug
+imports
+bck
+dataset_img
+versions
+
+beta.py
+gui.py
+opnvv.py
+sched_delete.log
+
 
 test_detect.mp4
 test_detect2.mp4

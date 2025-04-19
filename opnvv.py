@@ -1,16 +1,27 @@
-import cv2
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+import tensorflow as tf
+import torch
 
-# Common path within OpenCV's data directory
-cascade_path = os.path.join(cv2.__path__[0], 'data', 'haarcascade_frontalface_default.xml')
-if os.path.exists(cascade_path):
-    print(f"File found at: {cascade_path}")
-else:
-    print("File not found in OpenCV data directory.")
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
-# Check project directory
-project_path = "~/Downloads/face_recognition_beta/haarcascade_frontalface_default.xml"
-if os.path.exists(os.path.expanduser(project_path)):
-    print(f"File found at: {project_path}")
+# Check TensorFlow version and GPU availability
+print("TensorFlow Version:", tf.__version__)
+print("Physical GPU Devices:", tf.config.list_physical_devices('GPU'))
+
+if tf.config.list_physical_devices('GPU'):
+   print("GPU is available!")
 else:
-    print("File not found in project directory.")
+   print("No GPU detected. Running on CPU.")
+
+# Check CUDA and cuDNN versions
+print("CUDA Version:", tf.sysconfig.get_build_info()["cuda_version"])
+print("cuDNN Version:", tf.sysconfig.get_build_info()["cudnn_version"])
+
+if torch.cuda.is_available():
+    print("PyTorch detected GPU(s):")
+    print(f"Number of GPUs: {torch.cuda.device_count()}")
+    for i in range(torch.cuda.device_count()):
+        print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+else:
+    print("No GPU detected by PyTorch. Running on CPU.")

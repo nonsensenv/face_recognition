@@ -1,20 +1,23 @@
 import mysql.connector
 
 def database_connection():
+    # Connect to MySQL database
     try:
-
+        # Initial connection without database
         con = mysql.connector.connect(
             host="localhost",
             port=3306,
-            user="eve",  # ENTER USERNAME HERE
-            password="137982"  # ENTER PASSWORD HERE
+            user="eve",
+            password="137982"
         )
         cursor = con.cursor()
-        database_name = "face_recognition"  # ENTER DATABASE NAME HERE
+        database_name = "face_recognition"
 
+        # Check if database exists
         cursor.execute(f"SHOW DATABASES LIKE '{database_name}'")
         result = cursor.fetchone()
 
+        # Create database if it doesn't exist
         if not result:
             cursor.execute(f"CREATE DATABASE {database_name}")
             print(f"Database '{database_name}' created successfully")
@@ -22,11 +25,12 @@ def database_connection():
         cursor.close()
         con.close()
 
+        # Connect to specific database
         con = mysql.connector.connect(
             host="localhost",
             port=3306,
-            user="eve",  # ENTER USERNAME HERE
-            password="137982",  # ENTER PASSWORD HERE
+            user="eve",
+            password="137982",
             database=database_name,
             autocommit=False 
         )
@@ -34,18 +38,21 @@ def database_connection():
             print("Successfully connected to the database")
         return con
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(f"Error: {err}")  # Log error
         return None
 
 def close_database_connection(cursor, con):
+    # Close cursor and connection
     if cursor:
         cursor.close()
     if con and con.is_connected():
         con.close()
 
 def create_tables(con):
+    # Create database tables
     try:
         cursor = con.cursor()
+        # Table for students
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS current_enrolled_students (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -60,6 +67,7 @@ def create_tables(con):
                 role VARCHAR(25)
             )
         """)
+        # Table for faculty
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS active_faculty (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,6 +82,7 @@ def create_tables(con):
                 role VARCHAR(25)
             )
         """)
+        # Table for embedding dimensions
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS embedding (
                 STUDENT_ID INT(20) NULL,
@@ -85,6 +94,7 @@ def create_tables(con):
                 FOREIGN KEY (FACULTY_ID) REFERENCES active_faculty(id) ON DELETE CASCADE
             )
         """)
+        # Table for entry history
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS pedestrian_entry_history (
                 STUDENT_ID INT(20) NULL,
@@ -100,7 +110,21 @@ def create_tables(con):
                 FOREIGN KEY (FACULTY_ID) REFERENCES active_faculty(id) ON DELETE CASCADE
             )
         """)
-        con.commit()
+        # Table for admin
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admin (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL
+            )
+        """)
+        # Insert default admin credentials if not exists
+        cursor.execute("""
+            INSERT IGNORE INTO admin (username, password)
+            VALUES ('admin', 'admin123')
+        """)
+        con.commit()  # Save changes
         cursor.close()
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(f"Error: {err}")  # Log error
